@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/src/OrderService.Infrastructure/Messaging/KafkaProducer.cs
+/src/OrderService.Infrastructure/Messaging/DummyMessageProducer.cs
+/src/OrderService.Infrastructure/Caching/DummyCacheService.cs

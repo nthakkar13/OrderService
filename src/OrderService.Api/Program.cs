@@ -8,20 +8,23 @@ using StackExchange.Redis;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
-//builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
-//    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379")
-//);
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+if (string.IsNullOrEmpty(redisConnectionString))
+    throw new InvalidOperationException("The required 'ConnectionStrings:Redis' setting is missing or empty. Please check appsettings.json or environment variables.");
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    return ConnectionMultiplexer.Connect(redisConnectionString);
+});
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(
         Assembly.GetExecutingAssembly(), 
         Assembly.GetAssembly(typeof(IMessageProducer))!
     )
 );
-builder.Services.AddSingleton<ICacheService, DummyCacheService>();
-builder.Services.AddScoped<IMessageProducer, DummyMessageProducer>();
-//builder.Services.AddScoped<ICacheService, RedisCacheService>();
-//builder.Services.AddScoped<IMessageProducer, KafkaProducer>();
-//var baseUrl = builder.Configuration.GetSection("ExternalServices")["NotificationServiceBaseUrl"];
+//builder.Services.AddSingleton<ICacheService, DummyCacheService>();
+//builder.Services.AddScoped<IMessageProducer, DummyMessageProducer>();
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
+builder.Services.AddScoped<IMessageProducer, KafkaProducer>();
 var baseUrl = builder.Configuration.GetSection("ExternalServices")["NotificationServiceBaseUrl"];
 
 builder.Services.AddHttpClient<INotificationClient, NotificationClient>(client =>
